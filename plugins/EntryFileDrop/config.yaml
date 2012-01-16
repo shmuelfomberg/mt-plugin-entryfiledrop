@@ -1,0 +1,14 @@
+name: Entry File Drop
+id: EntryFileDrop
+key: EntryFileDrop
+author_link: http://www.movabletype.org/
+author_name: Six Apart
+description: <MT_TRANS phrase="Manages authors' accounts and actions on sites elsewhere around the web">
+version: 1.00
+plugin_link: http://www.movabletype.org/
+applications:
+    cms:
+    	methods:
+    		upload_asset_xhr: $EntryFileDrop::EntryFileDrop::upload_asset_xhr
+        callbacks:
+        	list_template_param.entry: $EntryFileDrop::EntryFileDrop::install_dropzone
