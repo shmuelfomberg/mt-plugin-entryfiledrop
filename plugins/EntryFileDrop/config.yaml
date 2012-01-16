@@ -3,12 +3,13 @@ id: EntryFileDrop
 key: EntryFileDrop
 author_link: http://www.movabletype.org/
 author_name: Six Apart
-description: <MT_TRANS phrase="Manages authors' accounts and actions on sites elsewhere around the web">
+description: Enabling file drop in the edit entry page
 version: 1.00
 plugin_link: http://www.movabletype.org/
+
 applications:
     cms:
-    	methods:
-    		upload_asset_xhr: $EntryFileDrop::EntryFileDrop::upload_asset_xhr
+        methods:
+            upload_asset_xhr: '$EntryFileDrop::EntryFileDrop::upload_asset_xhr'
         callbacks:
-        	list_template_param.entry: $EntryFileDrop::EntryFileDrop::install_dropzone
+            template_param.edit_entry: '$EntryFileDrop::EntryFileDrop::install_dropzone'

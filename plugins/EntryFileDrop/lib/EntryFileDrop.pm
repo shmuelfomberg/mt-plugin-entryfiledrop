@@ -20,7 +20,7 @@ my $DropJS = <<'JSEND';
 
   jQuery('<div></div>')
   	.addClass('droppable-cover')
-  	.css({'z-index': 50, 'position': 'absolute', 'display': 'none', 'background-color': #DCDDDD})
+  	.css({'z-index': 50, 'position': 'absolute', 'display': 'none', 'background-color': '#DCDDDD'})
   	.html('<h2><__trans phrase="Drop the files here!"></h2>')
   	.appendTo($asset_f);
 
@@ -161,9 +161,10 @@ JSEND
 
 sub install_dropzone {
     my ($cb, $app, $params, $tmpl) = @_;
+
 	my $js_include = '<script type="text/javascript" src="'
 		. $app->static_path()
-		. 'jquery/jquery.filedrop.js?v='
+		. 'plugins/EntryFileDrop/jquery.filedrop.js?v='
 		. $params->{mt_version_id}
 		. '"></script>';
 	$params->{js_include} = ($params->{js_include} || '') . $js_include;
@@ -194,8 +195,10 @@ sub upload_asset_xhr {
     $app->param('asset_select', ($app->param('asset_select') || ''));
     $app->param('entry_insert', ($app->param('entry_insert') || ''));
     $app->param('edit_field',   ($app->param('edit_field')   || ''));
+
+    require MT::CMS::Asset;
     
-    my ( $asset, $bytes ) = _upload_file(
+    my ( $asset, $bytes ) = MT::CMS::Asset::_upload_file(
         $app,
         require_type => ( $app->param('require_type') || '' ),
         @_,
