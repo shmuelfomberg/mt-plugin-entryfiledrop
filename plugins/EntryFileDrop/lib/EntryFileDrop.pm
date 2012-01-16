@@ -63,6 +63,7 @@ my $DropJS = <<'JSEND';
   }
 
   jQuery('#assets-field').filedrop({
+      fallback_id: 'dummy_not_exists',
       maxfiles: 25,
       maxfilesize: 20,    // max file size in MBs
       url: '<mt:var name="script_url">', // upload handler, handles each file separately
