@@ -14,11 +14,6 @@ my $DropJS = <<'JSEND';
   dateStr += now.getDate(); 
 
   jQuery('<div></div>')
-  	.attr('id', 'asset_xhr_upload_status')
-  	.css('display', 'none')
-  	.insertAfter($asset_f.find('#asset-list'));
-
-  jQuery('<div></div>')
   	.addClass('droppable-cover')
   	.css({'z-index': 50, 'position': 'absolute', 'display': 'none', 'background-color': '#DCDDDD'})
   	.html('<h2><__trans phrase="Drop the files here!"></h2>')
@@ -96,16 +91,17 @@ my $DropJS = <<'JSEND';
           // i = index => 0, 1, 2, 3, 4 etc
           // file is the actual file of the index
           // len = total files user dropped
-          $asset_f.find('#asset_xhr_upload_status')
-            .html('Uploading ' + (i+1) + '/' + len + ': ' + file.name)
-            .show();
+          jQuery('<div></div>')
+            .attr('id', 'asset_xhr_upload_status_' + i)
+            .html('Uploading ' + (i+1) + '/' + len + ': ' + file.name)            
+            .insertAfter($asset_f.find('#asset-list'));
       },
       error: function(err, file) {
         alert(err);
       },
       uploadFinished: function(i, file, response, time) {
           // response is the data you got back from server in JSON format.
-          $asset_f.find('#asset_xhr_upload_status').hide();
+          $asset_f.find('#asset_xhr_upload_status_' + i).remove();
           var result = response.result.type;
           if (result === 'success') {
             var res = response.result;
