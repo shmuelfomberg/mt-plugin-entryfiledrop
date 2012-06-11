@@ -1,15 +1,24 @@
 Entry File Drop plugin for Movable Type
+---------------------------------------
 
 This plugin enables you to drag-n-drop files to the assets box on the edit entry screen.
 they will be uploaded as if you have 'add asset' them one-by-one
 
-Installation:
+It gives you a small "Manage Tags" dialog (link in the buttom of the assets box)
+that let you add and remove tags for the entry tags
+
+You can set (in the blog plugin config page) a list of suggested tags, and they 
+will be added as special buttons to the list
+
+Installation
+------------
 
 As any MT plugin, just copy it over your MT installation.
 
-Competability:
+Competability
+-------------
 
-Works on 5.12
+Works on 5.14
 should work on 5.06 if its jQuery will be updated
 I don't know about 4.3x
 

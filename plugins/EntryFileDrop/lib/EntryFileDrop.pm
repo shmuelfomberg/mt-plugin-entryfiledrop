@@ -26,7 +26,7 @@ my $DropJS = <<'JSEND';
     .click(function () {
       var $id_list = $asset_f.find('#include_asset_ids');
       var asset_ids = $id_list.val();
-      var url = '<mt:CGIPath><mt:AdminScript>?__mode=asset_tags_dialog&blog_id=<mt:var name="blog_id" escape="url">&id='+asset_ids;
+      var url = '<mt:var name="script_url">?__mode=asset_tags_dialog&blog_id=<mt:var name="blog_id" escape="url">&id='+asset_ids;
       jQuery.fn.mtDialog.open(url);
       return false;
     });
@@ -47,7 +47,7 @@ my $DropJS = <<'JSEND';
       .attr('id', 'list-asset-'+id)
       .addClass('asset-type-'+type);
     jQuery('<a></a>')
-      .attr('href', '<mt:CGIPath><mt:AdminScript>?__mode=view&_type=asset&blog_id=<mt:var name="blog_id" escape="url">&id='+id)
+      .attr('href', '<mt:var name="script_url">?__mode=view&_type=asset&blog_id=<mt:var name="blog_id" escape="url">&id='+id)
       .addClass('asset-title')
       .text(name)
       .appendTo($item);
@@ -178,8 +178,6 @@ sub install_dropzone {
 		. '"></script>';
 	$params->{js_include} = ($params->{js_include} || '') . $js_include;
 
-	$DropJS =~ s/<mt:CGIPath>/$app->config('CGIPath')/ge;
-	$DropJS =~ s/<mt:AdminScript>/$app->config('AdminScript')/ge;
 	$DropJS =~ s/<mt:var name="script_url">/$params->{script_url}/ge;
 	$DropJS =~ s/<mt:var name="blog_id" escape="url">/$params->{blog_id}/ge;
 	$DropJS =~ s/<mt:var name="magic_token">/$params->{magic_token}/ge;
@@ -257,9 +255,21 @@ sub asset_tags_dialog {
     return $app->permission_denied()
         if !$app->can_do('access_to_insert_asset_list');
     my @ids = grep /^\d+$/, split ',', $asset_ids;
-    # print STDERR "found ids: ", join('|', @ids), "\n";
-    # my @assets = $app->model('asset')->load({ id => \@ids, blog_id => $blog_id });
-    # print STDERR "objects: ", scalar(@assets), "\n";
+
+    my $plugin = MT->component('EntryFileDrop');
+    my $suggested_tags = $plugin->get_config_value('suggested_tags', "blog:$blog_id");
+    my (@s_tags, @s_rec);
+    @s_tags = split ',', $suggested_tags 
+        if defined( $suggested_tags ) and length( $suggested_tags );
+    foreach my $tag (@s_tags) {
+        my $name = $tag;
+        my $t = { name => $name };
+        $name =~ s/\@/atsign/g;;
+        $name =~ s/\$/dollarsign/g;
+        $name =~ s/\W//g;
+        $t->{id} = $name;
+        push @s_rec, $t;
+    }
 
     my $ot_class = $app->model('objecttag');
     my $tag_class = $app->model('tag');
@@ -287,6 +297,7 @@ sub asset_tags_dialog {
             no_limit => 1,
             code     => $hasher,
             template => 'asset_tags_dialog.tmpl',
+            params   => { suggested => \@s_rec },
         }
     );
 
