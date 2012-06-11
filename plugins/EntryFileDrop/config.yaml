@@ -11,5 +11,6 @@ applications:
     cms:
         methods:
             upload_asset_xhr: '$EntryFileDrop::EntryFileDrop::upload_asset_xhr'
+            asset_tags_dialog: '$EntryFileDrop::EntryFileDrop::asset_tags_dialog'
         callbacks:
             template_param.edit_entry: '$EntryFileDrop::EntryFileDrop::install_dropzone'

@@ -19,6 +19,18 @@ my $DropJS = <<'JSEND';
   	.html('<h2><__trans phrase="Drop the files here!"></h2>')
   	.appendTo($asset_f);
 
+  jQuery('<a></a>')
+    .text('Manage tags')
+    .attr('href', '#')
+    .appendTo($asset_f.find('.widget-footer'))
+    .click(function () {
+      var $id_list = $asset_f.find('#include_asset_ids');
+      var asset_ids = $id_list.val();
+      var url = '<mt:CGIPath><mt:AdminScript>?__mode=asset_tags_dialog&blog_id=<mt:var name="blog_id" escape="url">&id='+asset_ids;
+      jQuery.fn.mtDialog.open(url);
+      return false;
+    });
+
   function insertAsset(id, name, type, thumbnail) {
     var $list = $asset_f.find('#asset-list');
     $list.find('#empty-asset-list').remove();
@@ -235,3 +247,49 @@ sub upload_asset_xhr {
     );
 
 }
+
+sub asset_tags_dialog {
+    my $app = shift;
+    my $blog_id = $app->param('blog_id');
+    my $asset_ids = $app->param('id');
+    return $app->errtrans("Invalid request.")
+      unless $blog_id;
+    return $app->permission_denied()
+        if !$app->can_do('access_to_insert_asset_list');
+    my @ids = grep /^\d+$/, split ',', $asset_ids;
+    # print STDERR "found ids: ", join('|', @ids), "\n";
+    # my @assets = $app->model('asset')->load({ id => \@ids, blog_id => $blog_id });
+    # print STDERR "objects: ", scalar(@assets), "\n";
+
+    my $ot_class = $app->model('objecttag');
+    my $tag_class = $app->model('tag');
+    my $hasher = sub {
+        my ( $asset, $row ) = @_;
+        my @tags = 
+            sort map { $_->name } $tag_class->load(
+                undef,
+                {   join => $ot_class->join_on('tag_id',
+                        { blog_id => $asset->blog_id, 
+                          object_id => $asset->id,
+                          object_datasource => 'asset', 
+                        }, 
+                        { unique => 1 } ),
+                }
+            );
+        $row->{tags} = \@tags;
+    };
+
+    local $app->{component} = 'EntryFileDrop';
+    return $app->listing(
+        {   type     => 'asset',
+            terms    => { id => \@ids, blog_id => $blog_id },
+            args     => undef,
+            no_limit => 1,
+            code     => $hasher,
+            template => 'asset_tags_dialog.tmpl',
+        }
+    );
+
+}
+
+1;
