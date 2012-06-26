@@ -1,0 +1,89 @@
+
+<mt:setvarblock name="page_title"><__trans phrase="Manage Entry Asset Tags"></mt:setvarblock>
+
+<mt:include name="dialog/header.tmpl">
+
+<mt:unless name="object_label_plural"><mt:var name="object_label_plural" value=""></mt:unless>
+
+<mt:setvarblock name="jq_js_include" append="1">
+	function SuggestTagButton(id, name) {
+		jQuery('#add_tag_'+id).click(function () {
+			var f = jQuery('#asset_listing-form')[0];
+			f.elements['action_name'].value = 'add_tags';
+			return doForMarkedInThisWindow(
+				f, '', 
+				'<mt:var name="object_label_plural" escape="js" lower_case="1">', 
+				'id', 'itemset_action', 
+				{ 'itemset_action_input': name }, 
+				'<__trans phrase="to act upon" escape="js">');
+		});
+	}
+</mt:setvarblock>
+
+<mt:loop name="suggested">
+<mt:setvarblock name="action_buttons" append="1">
+  <button
+     type="button"
+     id="add_tag_<$mt:var name="id"$>"
+     title="<__trans phrase="Add Tag '[_1]'" params="<$mt:var name="name"$>">"
+     class="button mt-tag-<$mt:var name="id"$>">
+    Add <$mt:var name="name"$>
+  </button>
+</mt:setvarblock>
+<mt:setvarblock name="jq_js_include" append="1">
+	SuggestTagButton('<$mt:var name="id"$>', '<$mt:var name="name"$>');
+</mt:setvarblock>
+</mt:loop>
+
+<mt:setvarblock name="table_header">
+<tr>
+  <th class="col head cb"><input type="checkbox" name="id-head" value="all" class="select" /></th>
+  <th class="col head template-name primary"><span class="col-label"><__trans phrase="Name"></span></th>
+  <th class="col head tags primary"><span class="col-label"><__trans phrase="Tags"></span></th>
+</tr>
+</mt:setvarblock>
+
+<mtapp:listing id="asset_listing" hide_pager="1" class="show-all" listing_class="listing" type="asset">
+<mt:if __first__>
+  <thead>
+    <mt:var name="table_header">
+  </thead>
+
+  <tfoot>
+    <mt:var name="table_header">
+  </tfoot>
+
+  <tbody>
+</mt:if>
+
+<tr class="<mt:if name="__odd__">odd<mt:else>even</mt:if>">
+	<td class="col cb"><input type="checkbox" name="id" class="select" value="<mt:var name="id">" /></td>
+	<td class="col template-name"><a href="<mt:var name="script_url">?__mode=view&amp;_type=template&amp;id=<mt:var name="id">&amp;blog_id=<mt:var name="blog_id">"><mt:var name="label" escape="html"></a></td>
+	<td class="col tags"><mt:loop name="tags"> <$mt:var name="__value__"$> </mt:loop>
+</tr>
+</mtapp:listing>
+
+<div class="actions-bar">
+  <form action="" method="get" onsubmit="return false">
+    <button
+       type="submit"
+       accesskey="x"
+       class="cancel action button mt-close-dialog"
+       title="<__trans phrase="Close (x)">"
+       ><__trans phrase="Close"></button>
+  </form>
+</div>
+
+<mt:setvarblock name="jq_js_include" append="1">
+	jQuery('#asset_listing-form').attr('target', '_self');
+
+    jQuery('button.mt-asset_listing-form-action').mtDoPluginAction({
+        id: 'asset_listing-form',
+        plural: '<mt:var name="object_label_plural" escape="js" lower_case="1">',
+        args: {},
+        phrase: '<__trans phrase="to act upon" escape="js">'
+    });
+
+    jQuery.mtCheckbox();
+</mt:setvarblock>
+<mt:include name="dialog/footer.tmpl">
