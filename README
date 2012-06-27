@@ -22,6 +22,16 @@ Works on 5.14
 should work on 5.06 if its jQuery will be updated
 I don't know about 4.3x
 
+L10N
+____
+
+This plugin includes localization for English and Japanese
+
+Patches to extend it to other languages are welcome
+
+Author and License
+------------------
+
 Written By Shmuel Fomberg, all right reserved
 
 License: Perl (Artistic v2)
