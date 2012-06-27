@@ -6,12 +6,16 @@ my $DropJS = <<'JSEND';
 
   var $asset_f = jQuery('#assets-field');
   $asset_f.css('z-index', 10);
-  var now = new Date();
-  var dateStr = now.getFullYear() + "/";
-  if (now.getMonth() < 9 ) dateStr += "0";
-  dateStr += (now.getMonth() + 1).toString() + "/"; 
-  if (now.getDate() < 10 ) dateStr += "0";
-  dateStr += now.getDate(); 
+
+  function CreateDateString() {
+    var now = new Date();
+    var month = (now.getMonth() + 1).toString();
+    var day = now.getDate().toString();
+    if (month.length == 1) month = "0" + month;
+    if (day.length == 1) day = "0" + day;
+    return now.getFullYear() + "/" + month + "/" + day;
+  }
+  var dateStr = CreateDateString();
 
   jQuery('<div></div>')
   	.addClass('droppable-cover')
@@ -20,7 +24,7 @@ my $DropJS = <<'JSEND';
   	.appendTo($asset_f);
 
   jQuery('<a></a>')
-    .text('Manage tags')
+    .text('<__trans phrase="Manage tags">')
     .attr('href', '#')
     .appendTo($asset_f.find('.widget-footer'))
     .click(function () {
@@ -114,6 +118,10 @@ my $DropJS = <<'JSEND';
       uploadFinished: function(i, file, response, time) {
           // response is the data you got back from server in JSON format.
           $asset_f.find('#asset_xhr_upload_status_' + i).remove();
+          if (response.error) {
+            alert('Could not upload file: '+file.name+' '+response.error);
+            return;
+          }
           var result = response.result.type;
           if (result === 'success') {
             var res = response.result;
@@ -169,7 +177,8 @@ my $DropJS = <<'JSEND';
 JSEND
 
 sub install_dropzone {
-    my ($cb, $app, $params, $tmpl) = @_;
+  my ($cb, $app, $params, $tmpl) = @_;
+  my $plugin = $app->component('EntryFileDrop');
 
 	my $js_include = '<script type="text/javascript" src="'
 		. $app->static_path()
@@ -177,11 +186,11 @@ sub install_dropzone {
 		. $params->{mt_version_id}
 		. '"></script>';
 	$params->{js_include} = ($params->{js_include} || '') . $js_include;
-
-	$DropJS =~ s/<mt:var name="script_url">/$params->{script_url}/ge;
-	$DropJS =~ s/<mt:var name="blog_id" escape="url">/$params->{blog_id}/ge;
-	$DropJS =~ s/<mt:var name="magic_token">/$params->{magic_token}/ge;
-	$params->{jq_js_include} = ($params->{jq_js_include} || '') . $DropJS;
+  my $d_tmpl = MT::Template->new();
+  $d_tmpl->text($plugin->translate_templatized($DropJS));
+  my $out = $d_tmpl->build($tmpl->context());
+	$params->{jq_js_include} = ($params->{jq_js_include} || '') . $out;
+  return 1;
 }
 
 sub upload_asset_xhr {
@@ -211,7 +220,7 @@ sub upload_asset_xhr {
         @_,
     );
 
-    return $app->json_error( $app->translate("Error uploading file") )
+    return $app->json_error( $app->errstr() )
         unless $asset;
     
     if (not $bytes) {
