@@ -3,3 +3,31 @@
     <input type="text" name="suggested_tags" id="suggested_tags"
         value="<mt:Var name="suggested_tags">" />
 </mtapp:setting>
+
+<mtapp:setting 
+    id="sort_assets_by" 
+    label="<__trans phrase="Sort Entry Assets by">"
+    >
+    <select name="sort_assets_by">
+        <option value=""><__trans phrase="Select column to sort by"></option>
+        <mt:loop name="column_names">
+        <option 
+            value="<$mt:var name="__value__"$>"
+            <mt:if name="sort_assets_by" eq="$__value__"> selected="selected" </mt:if>
+            >
+                <$mt:var name="__value__"$>
+            </option>
+        </mt:loop>
+    </select>
+    <select name="sort_assets_order">
+        <option 
+            value="ascend"
+            <mt:if name="sort_assets_order" eq="ascend"> selected="selected" </mt:if>
+            ><__trans phrase="ascend"></option>
+        <option 
+            <mt:if name="sort_assets_order" eq="descend"> selected="selected" </mt:if>
+            value="descend"
+            ><__trans phrase="descend"></option>
+    </select>
+</mtapp:setting>
+

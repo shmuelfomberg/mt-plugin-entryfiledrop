@@ -177,8 +177,8 @@ my $DropJS = <<'JSEND';
 JSEND
 
 sub install_dropzone {
-  my ($cb, $app, $params, $tmpl) = @_;
-  my $plugin = $app->component('EntryFileDrop');
+    my ($cb, $app, $params, $tmpl) = @_;
+    my $plugin = $app->component('EntryFileDrop');
 
 	my $js_include = '<script type="text/javascript" src="'
 		. $app->static_path()
@@ -186,11 +186,48 @@ sub install_dropzone {
 		. $params->{mt_version_id}
 		. '"></script>';
 	$params->{js_include} = ($params->{js_include} || '') . $js_include;
-  my $d_tmpl = MT::Template->new();
-  $d_tmpl->text($plugin->translate_templatized($DropJS));
-  my $out = $d_tmpl->build($tmpl->context());
+    my $d_tmpl = MT::Template->new();
+    $d_tmpl->text($plugin->translate_templatized($DropJS));
+    my $out = $d_tmpl->build($tmpl->context());
 	$params->{jq_js_include} = ($params->{jq_js_include} || '') . $out;
-  return 1;
+
+    _sort_entry_assets($cb, $app, $plugin, $params, $tmpl);
+
+    return 1;
+}
+
+sub _sort_entry_assets {
+    my ($cb, $app, $plugin, $params, $tmpl) = @_;
+    my $assets = $params->{asset_loop};
+    return unless $assets and @$assets;
+
+    my $blog = $app->blog;
+    my $scope = $blog->class . ':' . $blog->id;
+    my $cnf = $plugin->get_config_obj($scope);
+    my $data = $cnf->data();
+    my $sort_by = $data->{sort_assets_by};
+    return unless $sort_by;
+
+    my @asset_ids = map $_->{asset_id}, @$assets;
+    my @asset_objs = $app->model('asset')->load({id => \@asset_ids});
+
+    my $sort_order = $data->{sort_assets_order} || 'ascend';
+    my $is_meta = 0;
+    my $method = 'column';
+    if ($sort_by =~ m/^meta\./) {
+        $sort_by =~ s/^meta\.//;
+        $method = 'meta';
+        MT::Meta::Proxy->bulk_load_meta_objects( \@asset_objs );
+    }
+    my $dirnum = $sort_order eq 'ascend' ? 1 : -1;
+    my %asset_objs_map = map { ( $_->id, $_ ) } @asset_objs;
+    my @asset_recs = map { { 
+        original => $_, 
+        sort => $asset_objs_map{ $_->{asset_id} }->$method($sort_by),
+        } } @$assets;
+    @asset_recs = sort { $dirnum * ( $a->{sort} cmp $b->{sort} ) } @asset_recs;
+    @$assets = map $_->{original}, @asset_recs;
+    return;
 }
 
 sub upload_asset_xhr {
@@ -310,6 +347,21 @@ sub asset_tags_dialog {
         }
     );
 
+}
+
+sub blog_config_template {
+    my ($plugin, $params, $scope) = @_;
+    my $app = MT->instance;
+    my $blog_id = $app->param('blog_id');
+
+    my $column_names = $app->model('asset')->column_names;
+    if (my $f_class = $app->model('field')) {
+        my @fields = $f_class->load({blog_id => [0, $blog_id], obj_type => 'asset'});
+        push @$column_names, map "meta.field.".$_->basename, @fields;
+    }
+    $params->{column_names} = $column_names;
+
+    return $plugin->load_tmpl("suggested_tags.tmpl");
 }
 
 1;

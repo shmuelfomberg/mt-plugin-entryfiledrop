@@ -20,5 +20,12 @@ settings:
     suggested_tags:
         default:
         scope: blog
+    sort_assets_by:
+        default:
+        scope: blog
+    sort_assets_order:
+        default:
+        scope: blog
 
-blog_config_template: suggested_tags.tmpl
+blog_config_template:
+    code: '$EntryFileDrop::EntryFileDrop::blog_config_template'
