@@ -14,7 +14,7 @@ applications:
             upload_asset_xhr: '$EntryFileDrop::EntryFileDrop::upload_asset_xhr'
             asset_tags_dialog: '$EntryFileDrop::EntryFileDrop::asset_tags_dialog'
         callbacks:
-            template_param.edit_entry: '$EntryFileDrop::EntryFileDrop::install_dropzone'
+            template_param.edit_entry: '$EntryFileDrop::EntryFileDrop::template_param'
 
 settings:
     suggested_tags:
@@ -24,6 +24,9 @@ settings:
         default:
         scope: blog
     sort_assets_order:
+        default:
+        scope: blog
+    css_file:
         default:
         scope: blog
 

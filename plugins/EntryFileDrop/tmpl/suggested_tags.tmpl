@@ -31,3 +31,12 @@
     </select>
 </mtapp:setting>
 
+<mt:SetVarBlock name="css_file_hint"><__trans phrase="You can use: [_1]" params="<$mt:StaticWebPath$>plugins/EntryFileDrop/assets.css"></mt:SetVarBlock>
+<mtapp:setting 
+    id="css_file" 
+    label="<__trans phrase="Assets CSS file">"
+    hint="$css_file_hint"
+    show_hint=1
+    >
+    <input name="css_file" type="text" value="<mt:var name="css_file" escape="html">" />
+</mtapp:setting>

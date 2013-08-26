@@ -176,9 +176,25 @@ my $DropJS = <<'JSEND';
   });
 JSEND
 
-sub install_dropzone {
+sub template_param {
     my ($cb, $app, $params, $tmpl) = @_;
+
     my $plugin = $app->component('EntryFileDrop');
+    my $blog = $app->blog;
+    my $scope = $blog->class . ':' . $blog->id;
+    my $cnf = $plugin->get_config_obj($scope);
+    my $data = $cnf->data();
+
+    _install_dropzone($cb, $app, $plugin, $data, $params, $tmpl);
+    _sort_entry_assets($cb, $app, $plugin, $data, $params, $tmpl);
+    _set_assets_css($cb, $app, $plugin, $data, $params, $tmpl);
+
+    return 1;
+
+}
+
+sub _install_dropzone {
+    my ($cb, $app, $plugin, $data, $params, $tmpl) = @_;
 
 	my $js_include = '<script type="text/javascript" src="'
 		. $app->static_path()
@@ -190,21 +206,25 @@ sub install_dropzone {
     $d_tmpl->text($plugin->translate_templatized($DropJS));
     my $out = $d_tmpl->build($tmpl->context());
 	$params->{jq_js_include} = ($params->{jq_js_include} || '') . $out;
+    return;
+}
 
-    _sort_entry_assets($cb, $app, $plugin, $params, $tmpl);
-
-    return 1;
+sub _set_assets_css {
+    my ($cb, $app, $plugin, $data, $params, $tmpl) = @_;
+    my $css = $data->{css_file}
+        or return;
+    my $js_include = '<link rel="stylesheet" href="' 
+        . $css 
+        . '?v=' . $params->{mt_version_id} . '" type="text/css" />';
+    $params->{js_include} = ($params->{js_include} || '') . $js_include;
+    return;
 }
 
 sub _sort_entry_assets {
-    my ($cb, $app, $plugin, $params, $tmpl) = @_;
+    my ($cb, $app, $plugin, $data, $params, $tmpl) = @_;
     my $assets = $params->{asset_loop};
     return unless $assets and @$assets;
 
-    my $blog = $app->blog;
-    my $scope = $blog->class . ':' . $blog->id;
-    my $cnf = $plugin->get_config_obj($scope);
-    my $data = $cnf->data();
     my $sort_by = $data->{sort_assets_by};
     return unless $sort_by;
 
