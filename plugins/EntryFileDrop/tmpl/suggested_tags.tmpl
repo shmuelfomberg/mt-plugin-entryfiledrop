@@ -40,3 +40,109 @@
     >
     <input name="css_file" type="text" value="<mt:var name="css_file" escape="html">" />
 </mtapp:setting>
+
+<mtapp:setting 
+    id="css_actions" 
+    label="<__trans phrase="Add CSS classes to assets">"
+    >
+    <input name="css_actions" id="css_actions" type="hidden" value="<mt:var name="css_actions" escape="html">" />
+    <div id="css_actions_container">
+    </div>
+    <div id="css_actions_new">
+        <select id="css_actions_new_type">
+            <option value="tag" >Tagged as</option>
+            <option value="gt"  >Greater then</option>
+            <option value="lt"  >Lower then</option>
+            <option value="eq"  >Equal to</option>
+            <option value="else">Otherwise</option>
+        </select>
+        <input id="css_actions_new_value" value="" class="text short" />
+        <br/>
+        <label>Add CSS Class:</label>
+        <input id="css_actions_new_class" value="" class="text short" />
+        <br/>
+        <button class="btn" type="button" id="css_actions_new_btn">Add</button>
+    </div>
+</mtapp:setting>
+<script type="text/javascript">
+jQuery(function(){
+    var $ = jQuery;
+    var $container = $('#css_actions_container');
+
+    function type2txt(type) {
+        if (type == 'tag') {
+            return 'tagged as';
+        }
+        if (type == 'gt') {
+            return 'greater then';
+        }
+        if (type == 'lt') {
+            return 'lower then';
+        }
+        if (type == 'eq') {
+            return 'equal to';
+        }
+        if (type == 'else') {
+            return 'otherwise';
+        }
+        return '';
+    }
+
+    function collectJson() {
+        var list = [];
+        $container.children().each(function(ix,domEle){
+            var $elem = $(domEle);
+            var type = $elem.find('span.css_actions_type').text();
+            var val = $elem.find('span.css_actions_value').text();
+            var a_class = $elem.find('span.css_actions_class').text();
+            list.push( { 'type': type, 'val': val, 'class': a_class } );
+        });
+        $('#css_actions').val(list.toJSON());
+    }
+
+    function AddAction(type, val, a_class) {
+        var $div = $('<div/>').appendTo($container);
+        $div.append( document.createTextNode( 'If asset ' + type2txt(type) + ' ' ) );
+        $('<span/>', { class: 'css_actions_type', text: type, style: 'display: none;' }).appendTo($div);
+        $('<span/>', { class: 'css_actions_value', text: val })
+            .wrap('<strong/>').parent().appendTo($div);
+        $div.append( document.createTextNode( ' ' + 'set class' + ' ' ) );
+        $('<span/>', { class: 'css_actions_class', text: a_class })
+            .wrap('<strong/>').parent().appendTo($div);
+        $div.append( document.createTextNode( ' ' ) );
+        $('<button/>', { class: 'btn', text: 'Remove' })
+            .appendTo($div)
+            .click(function(){ $div.remove(); collectJson(); });
+    }
+
+    $('#css_actions_new_btn').click(function(){
+        var type = $('#css_actions_new_type option:selected').val();
+        var val = $('#css_actions_new_value').val();
+        var a_class = $('#css_actions_new_class').val();
+        if ( a_class != '' && ( type == 'else' || val != '' ) ) {
+            AddAction(type, val, a_class);
+            collectJson();
+        }
+    });
+
+    $('#css_actions_new_type').change(function(){
+        var $this = $(this);
+        if ($this.val() == 'else') {
+            $('#css_actions_new_value').addClass('disabled');
+        }
+        else {
+            $('#css_actions_new_value').removeClass('disabled');
+        }
+    });
+
+    var old_val = $('#css_actions').val();
+    if (old_val != '') {
+        var list = $.evalJSON(old_val);
+        $.each(list, function(ix,rec){
+            AddAction(rec['type'], rec['val'], rec['class']);
+        });
+    }
+
+});
+</script>
+

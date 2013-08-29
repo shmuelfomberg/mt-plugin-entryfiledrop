@@ -18,10 +18,10 @@ my $DropJS = <<'JSEND';
   var dateStr = CreateDateString();
 
   jQuery('<div></div>')
-  	.addClass('droppable-cover')
-  	.css({'z-index': 50, 'position': 'absolute', 'display': 'none', 'background-color': '#DCDDDD'})
-  	.html('<h2><__trans phrase="Drop the files here!"></h2>')
-  	.appendTo($asset_f);
+    .addClass('droppable-cover')
+    .css({'z-index': 50, 'position': 'absolute', 'display': 'none', 'background-color': '#DCDDDD'})
+    .html('<h2><__trans phrase="Drop the files here!"></h2>')
+    .appendTo($asset_f);
 
   jQuery('<a></a>')
     .text('<__trans phrase="Manage tags">')
@@ -188,6 +188,7 @@ sub template_param {
     _install_dropzone($cb, $app, $plugin, $data, $params, $tmpl);
     _sort_entry_assets($cb, $app, $plugin, $data, $params, $tmpl);
     _set_assets_css($cb, $app, $plugin, $data, $params, $tmpl);
+    _add_class_entry_assets($cb, $app, $plugin, $data, $params, $tmpl);
 
     return 1;
 
@@ -196,16 +197,16 @@ sub template_param {
 sub _install_dropzone {
     my ($cb, $app, $plugin, $data, $params, $tmpl) = @_;
 
-	my $js_include = '<script type="text/javascript" src="'
-		. $app->static_path()
-		. 'plugins/EntryFileDrop/jquery.filedrop.js?v='
-		. $params->{mt_version_id}
-		. '"></script>';
-	$params->{js_include} = ($params->{js_include} || '') . $js_include;
+  my $js_include = '<script type="text/javascript" src="'
+    . $app->static_path()
+    . 'plugins/EntryFileDrop/jquery.filedrop.js?v='
+    . $params->{mt_version_id}
+    . '"></script>';
+  $params->{js_include} = ($params->{js_include} || '') . $js_include;
     my $d_tmpl = MT::Template->new();
     $d_tmpl->text($plugin->translate_templatized($DropJS));
     my $out = $d_tmpl->build($tmpl->context());
-	$params->{jq_js_include} = ($params->{jq_js_include} || '') . $out;
+  $params->{jq_js_include} = ($params->{jq_js_include} || '') . $out;
     return;
 }
 
@@ -247,6 +248,63 @@ sub _sort_entry_assets {
         } } @$assets;
     @asset_recs = sort { $dirnum * ( $a->{sort} cmp $b->{sort} ) } @asset_recs;
     @$assets = map $_->{original}, @asset_recs;
+    return;
+}
+
+sub _add_class_entry_assets {
+    my ($cb, $app, $plugin, $data, $params, $tmpl) = @_;
+    my $rules_json = $data->{css_actions};
+    return unless defined $rules_json and length($rules_json) > 0;
+    my $assets = $params->{asset_loop};
+    return unless $assets and @$assets;
+
+    require JSON;
+    my $rules = JSON::from_json( $rules_json );
+    my $sort_by = $data->{sort_assets_by};
+    my $method;
+    if (not defined $sort_by) {
+        $method = undef;
+    }
+    elsif ( $sort_by =~ m/^meta\./ ) {
+        $sort_by =~ s/^meta\.//;
+        $method = 'meta';
+    }
+    else {
+        $method = 'column';
+    }
+
+    foreach my $rule (@$rules) {
+        if ($rule->{type} eq 'else') {
+            $rule->{func} = sub { 1 };
+        }
+        elsif ($rule->{type} eq 'tag') {
+            $rule->{func} = sub { $_[0]->has_tag( $_[1]->{val} ) };
+        }
+        elsif ( not defined $sort_by ) {
+            $rule->{func} = sub { 0 };
+        }
+        elsif ($rule->{type} eq 'eq') {
+            $rule->{func} = sub { $_[0]->$method() eq $_[1]->{val} };
+        }
+        elsif ($rule->{type} eq 'gt') {
+            $rule->{func} = sub { $_[0]->$method() gt $_[1]->{val} };
+        }
+        elsif ($rule->{type} eq 'lt') {
+            $rule->{func} = sub { $_[0]->$method() lt $_[1]->{val} };
+        }
+    }
+
+    my $a_class = $app->model('asset');
+
+    foreach my $asset (@$assets) {
+        my $obj = $a_class->load($asset->{asset_id});
+        foreach my $rule (@$rules) {
+            if ($rule->{func}->( $obj, $rule )) {
+                $asset->{asset_type} .= ' ' . $rule->{class};
+                last;
+            }
+        }
+    }
     return;
 }
 

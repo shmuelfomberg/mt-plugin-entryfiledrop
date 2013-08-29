@@ -4,7 +4,7 @@ key: EntryFileDrop
 author_link: http://www.movabletype.org/
 author_name: Six Apart
 description: Enabling file drop in the edit entry page
-version: 1.30
+version: 1.40
 plugin_link: http://www.movabletype.org/
 l10n_class: EntryFileDrop::L10N
 
@@ -27,6 +27,9 @@ settings:
         default:
         scope: blog
     css_file:
+        default:
+        scope: blog
+    css_actions:
         default:
         scope: blog
 
