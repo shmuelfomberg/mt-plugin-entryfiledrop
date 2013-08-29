@@ -284,13 +284,13 @@ sub _add_class_entry_assets {
             $rule->{func} = sub { 0 };
         }
         elsif ($rule->{type} eq 'eq') {
-            $rule->{func} = sub { $_[0]->$method() eq $_[1]->{val} };
+            $rule->{func} = sub { $_[0]->$method($sort_by) eq $_[1]->{val} };
         }
         elsif ($rule->{type} eq 'gt') {
-            $rule->{func} = sub { $_[0]->$method() gt $_[1]->{val} };
+            $rule->{func} = sub { $_[0]->$method($sort_by) gt $_[1]->{val} };
         }
         elsif ($rule->{type} eq 'lt') {
-            $rule->{func} = sub { $_[0]->$method() lt $_[1]->{val} };
+            $rule->{func} = sub { $_[0]->$method($sort_by) lt $_[1]->{val} };
         }
     }
 
