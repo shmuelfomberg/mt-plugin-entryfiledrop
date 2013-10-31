@@ -10,10 +10,11 @@ my $DropJS = <<'JSEND';
   function CreateDateString() {
     var now = new Date();
     var month = (now.getMonth() + 1).toString();
-    var day = now.getDate().toString();
+    //var day = now.getDate().toString();
     if (month.length == 1) month = "0" + month;
-    if (day.length == 1) day = "0" + day;
-    return now.getFullYear() + "/" + month + "/" + day;
+    //if (day.length == 1) day = "0" + day;
+    //return now.getFullYear() + "/" + month + "/" + day;
+    return "img/" + now.getFullYear() + "/" + month;
   }
   var dateStr = CreateDateString();
 
@@ -84,7 +85,8 @@ my $DropJS = <<'JSEND';
           __mode: 'upload_asset_xhr',
           blog_id: <mt:var name="blog_id" escape="url">,
           magic_token: '<mt:var name="magic_token">',
-          middle_path: dateStr
+          // middle_path: dateStr,
+          extra_path: '<mt:Var name="default_directory">'
       },
       docOver: function() {
           // user dragging files anywhere inside the browser document window
@@ -178,8 +180,10 @@ JSEND
 
 sub install_dropzone {
   my ($cb, $app, $params, $tmpl) = @_;
-  my $plugin = $app->component('EntryFileDrop');
 
+  my $plugin = $app->component('EntryFileDrop');
+  my $blog_id = $app->param('blog_id');
+  my $default_directory = $plugin->get_config_value('default_directory', "blog:$blog_id");
 	my $js_include = '<script type="text/javascript" src="'
 		. $app->static_path()
 		. 'plugins/EntryFileDrop/jquery.filedrop.js?v='
@@ -187,6 +191,7 @@ sub install_dropzone {
 		. '"></script>';
 	$params->{js_include} = ($params->{js_include} || '') . $js_include;
   my $d_tmpl = MT::Template->new();
+  $tmpl->context->var('default_directory',$default_directory);
   $d_tmpl->text($plugin->translate_templatized($DropJS));
   my $out = $d_tmpl->build($tmpl->context());
 	$params->{jq_js_include} = ($params->{jq_js_include} || '') . $out;
@@ -267,6 +272,7 @@ sub asset_tags_dialog {
 
     my $plugin = MT->component('EntryFileDrop');
     my $suggested_tags = $plugin->get_config_value('suggested_tags', "blog:$blog_id");
+
     my (@s_tags, @s_rec);
     @s_tags = split ',', $suggested_tags 
         if defined( $suggested_tags ) and length( $suggested_tags );
