@@ -1,11 +1,11 @@
 name: Entry File Drop
 id: EntryFileDrop
 key: EntryFileDrop
-author_link: http://www.movabletype.org/
-author_name: Six Apart
-description: Enabling file drop in the edit entry page
-version: 1.30
-plugin_link: http://www.movabletype.org/
+author_link: https://github.com/syegulalp/
+author_name: Serdar Yegulalp
+description: Enabling file drop in the edit entry page.
+version: 1.31
+plugin_link: https://github.com/syegulalp/mt-plugin-entryfiledrop/
 l10n_class: EntryFileDrop::L10N
 
 applications:
@@ -18,6 +18,9 @@ applications:
 
 settings:
     suggested_tags:
+        default:
+        scope: blog
+    default_directory:
         default:
         scope: blog
 
