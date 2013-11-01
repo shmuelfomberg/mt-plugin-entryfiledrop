@@ -7,16 +7,6 @@ my $DropJS = <<'JSEND';
   var $asset_f = jQuery('#assets-field');
   $asset_f.css('z-index', 10);
 
-  function CreateDateString() {
-    var now = new Date();
-    var month = (now.getMonth() + 1).toString();
-    var day = now.getDate().toString();
-    if (month.length == 1) month = "0" + month;
-    if (day.length == 1) day = "0" + day;
-    return now.getFullYear() + "/" + month + "/" + day;
-  }
-  var dateStr = CreateDateString();
-
   jQuery('<div></div>')
   	.addClass('droppable-cover')
   	.css({'z-index': 50, 'position': 'absolute', 'display': 'none', 'background-color': '#DCDDDD'})
@@ -84,7 +74,7 @@ my $DropJS = <<'JSEND';
           __mode: 'upload_asset_xhr',
           blog_id: <mt:var name="blog_id" escape="url">,
           magic_token: '<mt:var name="magic_token">',
-          middle_path: dateStr
+          middle_path: '<mt:var name="dateStr" escape="js">'
       },
       docOver: function() {
           // user dragging files anywhere inside the browser document window
@@ -141,7 +131,7 @@ my $DropJS = <<'JSEND';
                   magic_token: '<mt:var name="magic_token">',
                   fname: params.fname,
                   temp: params.temp,
-                  middle_path: dateStr
+                  middle_path: '<mt:var name="dateStr" escape="js">'
                 }, opts), callback, 'json');
                 $over.remove();
             };
@@ -179,6 +169,8 @@ JSEND
 sub install_dropzone {
   my ($cb, $app, $params, $tmpl) = @_;
   my $plugin = $app->component('EntryFileDrop');
+  my $blog_id = $app->param('blog_id');
+  my $default_directory = $plugin->get_config_value('default_directory', "blog:$blog_id");
 
 	my $js_include = '<script type="text/javascript" src="'
 		. $app->static_path()
@@ -186,8 +178,9 @@ sub install_dropzone {
 		. $params->{mt_version_id}
 		. '"></script>';
 	$params->{js_include} = ($params->{js_include} || '') . $js_include;
+  my $dateStr = qq{<mt:setvarblock name="dateStr">$default_directory</mt:setvarblock>\n};
   my $d_tmpl = MT::Template->new();
-  $d_tmpl->text($plugin->translate_templatized($DropJS));
+  $d_tmpl->text($plugin->translate_templatized($dateStr . $DropJS));
   my $out = $d_tmpl->build($tmpl->context());
 	$params->{jq_js_include} = ($params->{jq_js_include} || '') . $out;
   return 1;

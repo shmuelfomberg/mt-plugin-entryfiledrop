@@ -1,5 +1,10 @@
 <mtapp:setting id="suggested_tags" label="<__trans phrase="Suggested tag list">"
     hint="<__trans phrase="Enter the tags to be suggested">" show_hint=1>
     <input type="text" name="suggested_tags" id="suggested_tags"
-        value="<mt:Var name="suggested_tags">" />
+        value="<mt:Var name="suggested_tags" escape="html">" />
+</mtapp:setting>
+<mtapp:setting id="default_directory" label="<__trans phrase="Default directory">"
+     hint="<__trans phrase="Enter the directory for drop-uploaded files. Can use MT template, i.e. &lt;mt:Date format='%Y/%m/%d'&gt;.">" show_hint=1>
+     <input type="text" name="default_directory" id="default_directory"
+         value="<mt:Var name="default_directory" escape="html">" />
 </mtapp:setting>

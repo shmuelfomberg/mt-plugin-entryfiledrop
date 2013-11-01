@@ -4,7 +4,7 @@ key: EntryFileDrop
 author_link: http://www.movabletype.org/
 author_name: Six Apart
 description: Enabling file drop in the edit entry page
-version: 1.30
+version: 1.31
 plugin_link: http://www.movabletype.org/
 l10n_class: EntryFileDrop::L10N
 
@@ -19,6 +19,9 @@ applications:
 settings:
     suggested_tags:
         default:
+        scope: blog
+    default_directory:
+        default: '<mt:Date format="%Y/%m/%d">'
         scope: blog
 
 blog_config_template: suggested_tags.tmpl
