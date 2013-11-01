@@ -11,6 +11,7 @@ use vars qw( %Lexicon );
     'Manage tags' => 'タグを管理',
     'Drop the files here!' => 'ここにファールを落ちて',
     'Suggested tag list' => '示唆するタグ一覧',
+    "Enter the directory for drop-uploaded files. Can use MT template, i.e. [_1]." => "ファイル落ちのディレクトリ。MTテムプレトもうOK、例え [_1]。",
 );
 
 1;
